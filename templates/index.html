@@ -315,40 +315,52 @@
 
     <script>
         // --- 1. データの読み込みと保存機能 ---
-        // localStorageからデータを取得。なければデフォルトを表示
-        let items = JSON.parse(localStorage.getItem('travel-items')) ||
-            ["新幹線のチケット・えきねっと確認", "着替え（2泊分）", "スマホの充電器", "財布", "常備薬"];
+        let items = JSON.parse(localStorage.getItem('travel-items-v2')) ||
+            ["着替え（2泊分）", "財布", "充電器", "常備薬", "眼鏡、コンタクト", "化粧品"];
 
         const listElement = document.getElementById('checklist');
 
-        // ブラウザにデータを保存する関数
         function saveToLocal() {
             localStorage.setItem('travel-items', JSON.stringify(items));
         }
 
-        // --- 2. リストの描画機能 ---
+        // --- 2. リストの描画機能（削除ボタン付き） ---
         function renderList() {
             listElement.innerHTML = '';
             items.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.className = "flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100";
+                li.className = "flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100 group";
                 li.innerHTML = `
-                    <input type="checkbox" id="item-${index}" class="w-6 h-6 text-green-600 rounded border-gray-300 cursor-pointer" onchange="toggleItem(this, 'label-${index}')">
-                    <label id="label-${index}" for="item-${index}" class="cursor-pointer text-slate-700 select-none flex-1 transition-all duration-200 text-lg">${item}</label>
-                `;
+                <input type="checkbox" id="item-${index}" class="w-6 h-6 text-green-600 rounded border-gray-300 cursor-pointer" onchange="toggleItem(this, 'label-${index}')">
+                <label id="label-${index}" for="item-${index}" class="cursor-pointer text-slate-700 select-none flex-1 transition-all duration-200 text-lg">${item}</label>
+                <button onclick="deleteItem(${index})" class="text-slate-300 hover:text-red-500 transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            `;
                 listElement.appendChild(li);
             });
         }
 
-        // --- 3. 追加・チェック機能 ---
+        // --- 3. 追加・チェック・削除機能 ---
         function addItem() {
             const input = document.getElementById('newItemInput');
             const value = input.value.trim();
             if (value !== "") {
                 items.push(value);
                 input.value = '';
-                saveToLocal(); // 追加したら保存！
+                saveToLocal();
                 renderList();
+            }
+        }
+
+        // 削除用関数
+        function deleteItem(index) {
+            if (confirm('この項目を削除しますか？')) {
+                items.splice(index, 1); // 配列から削除
+                saveToLocal();          // 保存
+                renderList();           // 再描画
             }
         }
 
@@ -361,14 +373,13 @@
             }
         }
 
-        // Enterキー入力対応
         document.getElementById('newItemInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 addItem();
             }
         });
 
-        // --- 4. カウントダウン機能 ---
+        // --- 4. カウントダウン機能（1行に収めるための微調整） ---
         function updateCountdown() {
             const targetDate = new Date('2026-03-30T08:26:00');
             const now = new Date();
@@ -385,12 +396,11 @@
             const minutes = Math.floor((diff / 1000 / 60) % 60);
             const seconds = Math.floor((diff / 1000) % 60);
 
-            countdownElement.innerHTML = `出発まであと <span class="text-2xl">${days}</span> 日 <span class="text-2xl">${hours}</span> 時間 <span class="text-2xl">${minutes}</span> 分 <span class="text-2xl">${seconds}</span> 秒 ♨️`;
+            // 文字数をさらに削って1行に収まりやすくしました
+            countdownElement.innerHTML = `あと ${days}日 ${hours}時間 ${minutes}分 ${seconds}秒 ♨️`;
         }
 
-        // 初期描画
         renderList();
-
         updateCountdown();
         setInterval(updateCountdown, 1000);
     </script>
