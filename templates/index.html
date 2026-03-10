@@ -17,18 +17,23 @@
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
     <div class="max-w-7xl mx-auto p-4 md:p-8">
 
-        <header class="relative rounded-3xl shadow-2xl border border-slate-100 mb-10 overflow-hidden h-96 md:h-120">
+        <header
+            class="relative rounded-3xl shadow-2xl border border-slate-100 mb-10 overflow-hidden h-auto min-h-[400px] md:h-120 flex items-center justify-center">
             <img src="static/yubatake.jpg" alt="Kusatsu Onsen Yubatake"
                 class="absolute inset-0 w-full h-full object-cover">
 
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
 
-            <div class="relative z-10 text-center flex flex-col items-center justify-center h-full px-6">
-                <h1 class="text-4xl md:text-5xl font-bold text-white tracking-wider mb-4 drop-shadow-xl">草津温泉旅行のしおり</h1>
-                <p class="text-2xl md:text-3xl font-bold text-white drop-shadow-xl">2026.03.30 - 04.01</p>
+            <div class="relative z-10 text-center flex flex-col items-center justify-center w-full px-6 py-12">
+                <h1 class="text-3xl md:text-5xl font-bold text-white tracking-wider mb-2 drop-shadow-xl">
+                    草津温泉旅行の しおり
+                </h1>
+                <p class="text-xl md:text-3xl font-bold text-white/90 drop-shadow-md mb-8">
+                    2026.03.30 - 04.01
+                </p>
 
                 <div id="countdown"
-                    class="absolute top-6 right-6 bg-teal-100/90 border border-teal-200 text-teal-800 font-bold px-6 py-2.5 rounded-full shadow-lg text-sm md:text-base backdrop-blur-sm">
+                    class="bg-teal-100/90 border border-teal-200 text-teal-900 font-bold px-5 py-3 rounded-2xl shadow-lg text-sm md:text-base backdrop-blur-md inline-block max-w-full">
                     計算中...
                 </div>
             </div>
@@ -309,10 +314,19 @@
     </div>
 
     <script>
-        // --- 持ち物チェックリスト機能 ---
-        let items = ["新幹線のチケット・えきねっと確認", "着替え（2泊分）", "スマホの充電器", "財布", "常備薬"];
+        // --- 1. データの読み込みと保存機能 ---
+        // localStorageからデータを取得。なければデフォルトを表示
+        let items = JSON.parse(localStorage.getItem('travel-items')) ||
+            ["新幹線のチケット・えきねっと確認", "着替え（2泊分）", "スマホの充電器", "財布", "常備薬"];
+
         const listElement = document.getElementById('checklist');
 
+        // ブラウザにデータを保存する関数
+        function saveToLocal() {
+            localStorage.setItem('travel-items', JSON.stringify(items));
+        }
+
+        // --- 2. リストの描画機能 ---
         function renderList() {
             listElement.innerHTML = '';
             items.forEach((item, index) => {
@@ -326,12 +340,14 @@
             });
         }
 
+        // --- 3. 追加・チェック機能 ---
         function addItem() {
             const input = document.getElementById('newItemInput');
             const value = input.value.trim();
             if (value !== "") {
                 items.push(value);
                 input.value = '';
+                saveToLocal(); // 追加したら保存！
                 renderList();
             }
         }
@@ -345,25 +361,22 @@
             }
         }
 
+        // Enterキー入力対応
         document.getElementById('newItemInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 addItem();
             }
         });
 
-        renderList();
-
-        // --- カウントダウン機能 ---
+        // --- 4. カウントダウン機能 ---
         function updateCountdown() {
-            // 出発日時（鎌倉駅を出る時間）をセット
             const targetDate = new Date('2026-03-30T08:26:00');
             const now = new Date();
             const diff = targetDate - now;
-
             const countdownElement = document.getElementById('countdown');
 
             if (diff <= 0) {
-                countdownElement.innerHTML = "🎉 草津旅行スタート！思いっきり楽しんで！ 🎉";
+                countdownElement.innerHTML = "🎉 草津旅行スタート！ 🎉";
                 return;
             }
 
@@ -374,6 +387,9 @@
 
             countdownElement.innerHTML = `出発まであと <span class="text-2xl">${days}</span> 日 <span class="text-2xl">${hours}</span> 時間 <span class="text-2xl">${minutes}</span> 分 <span class="text-2xl">${seconds}</span> 秒 ♨️`;
         }
+
+        // 初期描画
+        renderList();
 
         updateCountdown();
         setInterval(updateCountdown, 1000);
